@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WallysRevenge.View"
         mc:Ignorable="d"
-        Title="MainView" Height="450" Width="800">
+        Title="MainView" Height="800" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
@@ -13,9 +13,28 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Button x:Name="btnAddCustomer" Click="btnAddCustomer_Click" Grid.Column="0">Add Customer</Button>
-        <Button x:Name="btnRawProduct" Click="btnRawProduct_Click" Grid.Column="1">Raw Product Manipulation</Button>
-        <Button x:Name="btnCreateOrder" Click="btnCreateOrder_Click" Grid.Column="2">Create New Order</Button>
-        <Button x:Name="btnOrderLookUpReturn" Click="btnOrderLookUpReturn_Click" Grid.Column="3">Lookup/Return</Button>   
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.4*"></RowDefinition>
+            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label Content="Wally's World PoS" FontSize="30" Grid.ColumnSpan="2" FontStretch="UltraExpanded" FontFamily="Arial Black" FontWeight="ExtraBlack"></Label>
+        <GroupBox Header="Customer Manipulation" Grid.Row="1" Grid.ColumnSpan="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+
+                    
+                </Grid.RowDefinitions>
+            </Grid>
+        </GroupBox>
     </Grid>
 </Window>

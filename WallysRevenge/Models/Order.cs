@@ -22,9 +22,6 @@ namespace WallysRevenge.Models
         public int OrderID { get; set; }
         public int CustomerID { get; set; }
         public int BranchID { get; set; }
-        public string OrderStatus { get; set; }
-        public DateTime OrderDate { get; set; }
-        public DateTime ReturnDate { get; set; }
-        public double SPrice { get; set; }
+
     }
 }

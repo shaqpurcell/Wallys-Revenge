@@ -97,20 +97,8 @@
     <Compile Include="DAL\SPWallyDB.cs" />
     <Compile Include="Models\Branch.cs" />
     <Compile Include="Models\Product.cs" />
-    <Compile Include="View\AddCustomerView.xaml.cs">
-      <DependentUpon>AddCustomerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\CreateOrder.xaml.cs">
-      <DependentUpon>CreateOrder.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\OrderLookupReturn.xaml.cs">
-      <DependentUpon>OrderLookupReturn.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\ProductManipulationView.xaml.cs">
-      <DependentUpon>ProductManipulationView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -145,23 +133,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Page Include="View\AddCustomerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\CreateOrder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\MainView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\OrderLookupReturn.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\ProductManipulationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

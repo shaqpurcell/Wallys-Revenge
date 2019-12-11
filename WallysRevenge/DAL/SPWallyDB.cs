@@ -76,7 +76,7 @@ namespace WallysRevenge.DAL
         */
         public List<Orderline> GetOrderlines(string orderID)
         {
-            const string sqlStatement = @"  SELECT orderLineID, orderID, productID, amount
+            const string sqlStatement = @"  SELECT orderLineID, orderID, productID, amount, orderStatus, orderDate, returnDate
                                             FROM orderline
                                             WHERE (orderID = @OrderID
                                             OR @OrderID = '')
@@ -118,7 +118,7 @@ namespace WallysRevenge.DAL
         public List<Order> GetOrders(string customerID)
         {
             //Command to be exectuted on the database
-            const string sqlStatement = @"  SELECT orderID, customerID, branchID, orderStatus, orderDate, returnDate, sPrice
+            const string sqlStatement = @"  SELECT orderID, customerID, branchID
                                             FROM orders
                                             WHERE (customerID = @CustomerID
                                             OR @CustomerID = '')
@@ -203,7 +203,10 @@ namespace WallysRevenge.DAL
                     OrderLineID = Convert.ToInt32(r["orderLineID"]),
                     OrderID = Convert.ToInt32(r["orderID"]),
                     ProductID = Convert.ToInt32(r["productID"]),
-                    Amount = Convert.ToInt32(r["amount"])
+                    Amount = Convert.ToInt32(r["amount"]),
+                    OrderStatus = Convert.ToString(r["orderStatus"]),
+                    ReturnDate = Convert.ToDateTime(r["returnDate"]),
+                    OrderDate = Convert.ToDateTime(r["orderDate"])
                 });
             }
 
@@ -264,11 +267,6 @@ namespace WallysRevenge.DAL
                     OrderID = Convert.ToInt32(r["orderID"]),
                     CustomerID = Convert.ToInt32(r["customerID"]),
                     BranchID = Convert.ToInt32(r["branchID"]),
-                    OrderStatus = Convert.ToString(r["orderStatus"]),
-                    ReturnDate = Convert.ToDateTime(r["returnDate"]),
-                    OrderDate = Convert.ToDateTime(r["orderDate"]),
-                    SPrice = Convert.ToDouble(r["sPrice"])
-
                 });
             }
 
@@ -396,43 +394,6 @@ namespace WallysRevenge.DAL
 
 
         /*
-        FUNCTION:		void UpdateOrdersSalePrice(Order order)
-        DESCRIPTION:	Update the sales price of an order
-        PARAMETERS:		Order order - an object repsenting the row to be updated in the database
-        RETURNS:		NONE
-        DEV:           
-        */
-        public void UpdateOrdersSalePrice(Order order)
-        {
-            //SQL command to be executed on the database
-            const string sqlStatement = @"  SELECT @total := AVG(wPrice * 1.4) FROM ((orderline
-			                                INNER JOIN orders ON orderline.orderID = orders.orderID)
-			                                INNER JOIN products ON orderline.productID = products.productID)
-                                            WHERE orderline.orderID = @OrderID
-			                                GROUP BY orderline.orderID;
-                                            UPDATE orders
-                                            SET sPrice = @total
-                                            WHERE orderID = @OrderID;";
-
-            using (var connection = new MySqlConnection(Properties.Settings.Default.connectionString))
-            {
-                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
-
-                command.Parameters.AddWithValue("@OrderID", order.OrderID);
-
-
-                //Open connection to database, adapter would normally fill this role but since no
-                //return data we need open the execute the command...
-                connection.Open();
-                command.ExecuteNonQuery();
-
-            }
-
-        }
-
-
-
-        /*
         FUNCTION:		void AddOrder(Order order)
         DESCRIPTION:	Creates a new row within the order table of the database
         PARAMETERS:		Order order - an object repsenting the row to be updated in the database
@@ -442,22 +403,16 @@ namespace WallysRevenge.DAL
         public void AddOrder(Order order)
         {
             //SQL command to be executed on the database
-            const string sqlStatement = @"  INSERT INTO orders (orderID, customerID, branchID, orderStatus, orderDate, returnDate, sPrice)
-                                            VALUE (@OrderID, @CustomerID, @BranchID, @OrderStatus, @OrderDate, @ReturnDate, @SPrice);";
+            const string sqlStatement = @"  INSERT INTO orders (customerID, branchID)
+                                            VALUE (@OrderID, @CustomerID, @BranchID);";
 
             using (var connection = new MySqlConnection(Properties.Settings.Default.connectionString))
             {
                 MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
                 //Insert custom parameters into the search string
-                command.Parameters.AddWithValue("@OrderID", order.OrderID);
                 command.Parameters.AddWithValue("@CustomerID", order.CustomerID);
                 command.Parameters.AddWithValue("@BranchID", order.BranchID);
-                command.Parameters.AddWithValue("@OrderStatus", order.OrderStatus);
-                command.Parameters.AddWithValue("@OrderDate", order.OrderDate);
-                command.Parameters.AddWithValue("@ReturnDate", order.ReturnDate);
-                command.Parameters.AddWithValue("@SPrice", order.SPrice);
-
 
                 //Open connection to database, adapter would normally fill this role but since no
                 //return data we need open the execute the command...
@@ -467,26 +422,6 @@ namespace WallysRevenge.DAL
             }
         }
 
-
-
-        /*
-        FUNCTION:		void ReturnOrder(Order order)
-        DESCRIPTION:	Starts the process of returning a given order based off the object given.
-        PARAMETERS:		Order order - an object repsenting the row to be updated in the database
-        RETURNS:		NONE
-        DEV:           
-        */
-        public void ReturnOrder(Order order)
-        {
-            List<Orderline> orderlines = GetOrderlines(order.OrderID.ToString());
-            
-            foreach (Orderline ol in orderlines)
-            {
-                UpdateProductQuantity(order, ol);
-            }
-            ChangeOrder(order);
-
-        }
 
 
 
@@ -560,45 +495,6 @@ namespace WallysRevenge.DAL
             }
         }
 
-        /*
-        FUNCTION:		ChangeOrder(Order order)
-        DESCRIPTION:	Sets the given object to return and gives it a current date time
-        PARAMETERS:		Order order - an object repsenting the row to be updated in the database
-                        Orderline orderline - The orderline within an order
-        RETURNS:		NONE
-        DEV:           
-        */
-        private void ChangeOrder(Order order)
-             {
-            const string sqlStatement = @"  UPDATE orders
-                                            SET orderStatus = @OrderStatus,
-                                                returnDate = @ReturnDate
-                                            WHERE orderID = @OrderID";
-
-                if (order.OrderStatus == "PAID")
-                {
-                    order.OrderStatus = "RETURN";
-                    order.ReturnDate = DateTime.Now;
-                }
-            
-              
-            using (var connection = new MySqlConnection(Properties.Settings.Default.connectionString))
-            {
-                MySqlCommand command = new MySqlCommand(sqlStatement, connection);
-
-                //Insert custom parameters into the search string
-                command.Parameters.AddWithValue("@OrderStatus", order.OrderStatus);
-                command.Parameters.AddWithValue("@ReturnDate", order.ReturnDate);
-                command.Parameters.AddWithValue("@OrderID", order.OrderID);
-
-                //Open connection to database, adapter would normally fill this role but since no
-                //return data we need open the execute the command...
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-
-        }
-
 
         /*
         FUNCTION:		UpdateProductQuantity(Order order, Orderline orderline)
@@ -607,20 +503,22 @@ namespace WallysRevenge.DAL
         RETURNS:		NONE
         DEV:           
         */
-        public void AddOrderLines(Orderline orderline)
+        public void AddOrderLine(Orderline orderline)
         {
-            const string sqlStatement = @"  INSERT INTO orderline (orderLineID, orderID, productID, amount)
-                                            VALUE (@OrderLineID, @OrderID, @ProductID, @Amount);";
+            const string sqlStatement = @"  INSERT INTO orderline (orderLineID, orderID, productID, amount, orderStatus, orderDate, returnDate)
+                                            VALUE (@OrderLineID, @OrderID, @ProductID, @Amount, @OrderStatus, @OrderDate, @ReturnDate);";
 
             using (var connection = new MySqlConnection(Properties.Settings.Default.connectionString))
             {
                 MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
                 //Insert custom parameters into the search string
-                command.Parameters.AddWithValue("@OrderLineID", orderline.OrderLineID);
                 command.Parameters.AddWithValue("@OrderID", orderline.OrderID);
                 command.Parameters.AddWithValue("@ProductID", orderline.ProductID);
                 command.Parameters.AddWithValue("@Amount", orderline.Amount);
+                command.Parameters.AddWithValue("@OrderStatus", orderline.Amount);
+                command.Parameters.AddWithValue("@OrderDate", orderline.Amount);
+                command.Parameters.AddWithValue("@ReturnDate", orderline.Amount);
 
                 //Open connection to database, adapter would normally fill this role but since no
                 //return data we need open the execute the command...
@@ -641,15 +539,15 @@ namespace WallysRevenge.DAL
         public void AddCustomer(Customer customer)
         {
             //SQL statement to insert a new customer into the customers table
-            const string sqlStatement = @"  INSERT INTO customers (customerID, firstName, lastName, phoneNumber)
-                                            VALUE (@CustomerID, @FirstName, @LastName, @PhoneNumber);";
+            const string sqlStatement = @"  INSERT INTO customers (firstName, lastName, phoneNumber)
+                                            VALUE (@FirstName, @LastName, @PhoneNumber);";
 
             using (var connection = new MySqlConnection(Properties.Settings.Default.connectionString))
             {
                 MySqlCommand command = new MySqlCommand(sqlStatement, connection);
 
                 //Insert custom parameters into the search string
-                command.Parameters.AddWithValue("@CustomerID", customer.CustomerID);
+
                 command.Parameters.AddWithValue("@FirstName", customer.FirstName);
                 command.Parameters.AddWithValue("@LastName", customer.LastName);
                 command.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
